@@ -1,14 +1,15 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import locale
+from babel.dates import format_datetime
+from datetime import datetime
 
 # Configuração da página
 st.set_page_config(page_title="📊 Dashboard Ministério BRIDGE - 2025", layout="wide")
 
-# Definir a localidade para português do Brasil
-#locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
-locale.setlocale(locale.LC_TIME, 'pt_BR')
+# Função para formatar datas sem depender de locale do sistema
+def formatar_data(data):
+    return format_datetime(data, "EEEE, d 'de' MMMM 'de' yyyy", locale='pt_BR')
 
 # Carregar os dados com cache para otimização de performance
 @st.cache_data
@@ -91,7 +92,7 @@ st.plotly_chart(fig1, use_container_width=True)
 
 # Gráfico de linha - Evolução das decisões ao longo do tempo
 df_time = filtered_df.groupby("Quando").size().reset_index(name="Quantidade")
-df_time["Quando"] = df_time["Quando"].dt.strftime('%d/%m/%y')  # Formatar as datas
+df_time["Quando"] = df_time["Quando"].apply(lambda x: formatar_data(x))  # Formatar as datas com babel
 fig2 = px.line(df_time, x="Quando", y="Quantidade", 
                title="📅 Evolução das Decisões ao Longo do Tempo",
                markers=True, line_shape='spline', text="Quantidade")
