@@ -1,0 +1,1 @@
+streamlit run Dashboard_Bridge_Consolidado.py
