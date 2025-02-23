@@ -7,7 +7,8 @@ import locale
 st.set_page_config(page_title="📊 Dashboard Ministério BRIDGE - 2025", layout="wide")
 
 # Definir a localidade para português do Brasil
-locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+#locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+locale.setlocale(locale.LC_TIME, 'pt_BR')
 
 # Carregar os dados com cache para otimização de performance
 @st.cache_data
