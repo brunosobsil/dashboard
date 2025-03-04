@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 from babel.dates import format_datetime
 from datetime import datetime
+import io
 
 # Configuração da página
 st.set_page_config(page_title="📊 Dashboard Ministério BRIDGE - 2025", layout="wide")
@@ -57,6 +58,13 @@ filtered_df = df[df["Decisão"].isin(selected_decisao)] if selected_decisao else
 st.image("images/logo.svg", width=200)
 
 st.title("Dashboard Ministério BRIDGE - 2025")
+
+# Calcular a data mais recente do arquivo Excel
+data_mais_recente = df["Quando"].max().strftime('%d/%m/%Y')
+
+# Adicionar subtítulo com o período
+st.markdown(f"### Período: 01/01/2025 até {data_mais_recente}")
+
 st.markdown("---")
 
 # Métricas principais
@@ -92,32 +100,31 @@ st.plotly_chart(fig1, use_container_width=True)
 
 # Gráfico de linha - Evolução das decisões ao longo do tempo
 df_time = filtered_df.groupby("Quando").size().reset_index(name="Quantidade")
-df_time["Quando"] = df_time["Quando"].apply(lambda x: formatar_data(x))  # Formatar as datas com babel
+df_time["Quando"] = df_time["Quando"].apply(lambda x: format_datetime(x, "EEEE, dd/MM/yy", locale='pt_BR'))  # Formatar as datas
 fig2 = px.line(df_time, x="Quando", y="Quantidade", 
                title="📅 Evolução das Decisões ao Longo do Tempo",
                markers=True, line_shape='spline', text="Quantidade")
-fig2.update_layout(xaxis=dict(tickmode='linear'))
+fig2.update_layout(xaxis=dict(tickmode='linear'), height=int((fig2.layout.height or 400) * 1.05))
 fig2.update_traces(textposition='top center', texttemplate='%{y}')
 st.plotly_chart(fig2, use_container_width=True)
 
 # Gráfico de barras - Distribuição das decisões por bairro
-fig3 = px.bar(filtered_df, x="Bairro", title="📍 Distribuição das Decisões por Bairro",
-              color_discrete_sequence=["#2297EF"])
+bairro_count_sorted = filtered_df[filtered_df["Bairro"] != "Não informado"]["Bairro"].value_counts().reset_index()
+bairro_count_sorted.columns = ["Bairro", "Quantidade"]
+bairro_count_sorted = bairro_count_sorted.sort_values(by="Quantidade", ascending=False).head(10)
+fig3 = px.bar(bairro_count_sorted, x="Bairro", y="Quantidade", title="📍 Distribuição das Decisões por Bairro",
+              color_discrete_sequence=["#2297EF"], text="Quantidade")
+fig3.update_traces(textposition='outside')
+fig3.update_layout(height=int((fig3.layout.height or 400) * 1.05))
 st.plotly_chart(fig3, use_container_width=True)
 
 # Gráfico de pizza - Percentual das decisões por bairro
-bairro_count = filtered_df["Bairro"].value_counts().reset_index()
-bairro_count.columns = ["Bairro", "Quantidade"]
-
-# Agrupar os bairros que não estão no top 25 em "Outros"
-top_25_bairros = bairro_count.head(25)
-outros = pd.DataFrame([{'Bairro': 'Outros', 'Quantidade': bairro_count['Quantidade'][25:].sum()}])
-bairro_count = pd.concat([top_25_bairros, outros], ignore_index=True)
-
+bairro_count = bairro_count_sorted.head(10)
 fig4 = px.pie(bairro_count, names="Bairro", values="Quantidade", 
               title="📊 Percentual das Decisões por Bairro",
               color_discrete_sequence=px.colors.sequential.Blues)
 fig4.update_traces(textinfo='percent+label')
+fig4.update_layout(height=int((fig4.layout.height or 400) * 1.05))
 st.plotly_chart(fig4, use_container_width=True)
 
 # Adicionar espaçamento abaixo do gráfico de pizza
