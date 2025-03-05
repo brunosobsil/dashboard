@@ -167,13 +167,13 @@ col3, col4 = st.columns(2)
 col3.metric("📞 Contatados pelo Bridge", total_contato_sucesso_start)
 col4.metric("📊 % Contatados pelo Bridge x Total de Participantes do Start", f"{percentual_contato_sucesso_start}%")
 
-# Gráfico de barras - Participantes do Start por Bairro
+# Gráfico de barras - Participantes do Start contatados pelo Bridge por Bairro
 fig_start_bairros = px.bar(top_bairros_start, x="Bairro", y="Quantidade", title="📍 Participantes do Start por Bairro",
               color_discrete_sequence=["#2297EF"], text="Quantidade")
 fig_start_bairros.update_traces(textposition='outside')
 st.plotly_chart(fig_start_bairros, use_container_width=True)
 
-# Gráfico de pizza - Percentual de Participantes do Start por Bairro
+# Gráfico de pizza - Percentual de Participantes do Start contatados pelo Bridge por Bairro
 fig_start_pizza = px.pie(top_bairros_start, names="Bairro", values="Quantidade", 
               title="📊 Percentual de Participantes do Start por Bairro",
               color_discrete_sequence=px.colors.sequential.Blues)
