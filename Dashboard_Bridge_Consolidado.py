@@ -141,56 +141,56 @@ st.markdown('<div class="spacer"></div>', unsafe_allow_html=True)
 # START #
 #########
 
-df_merged = df.merge(df_start, left_on="Chave", right_on="Telefone", how="left", indicator=True)
-df_participantes_start = df_merged[df_merged["_merge"] == "both"]
+# df_merged = df.merge(df_start, left_on="Chave", right_on="Telefone", how="left", indicator=True)
+# df_participantes_start = df_merged[df_merged["_merge"] == "both"]
 
-total_participantes_start = df_participantes_start.shape[0]
-total_participantes_start_geral = df_start.shape[0]
+# total_participantes_start = df_participantes_start.shape[0]
+# total_participantes_start_geral = df_start.shape[0]
 
-total_contato_sucesso_start = df_participantes_start[df_participantes_start["Conseguiu fazer contato?"] == "Sim"].shape[0]
+# total_contato_sucesso_start = df_participantes_start[df_participantes_start["Conseguiu fazer contato?"] == "Sim"].shape[0]
 
-percentual_participantes_start = round((total_participantes_start / total_contato_sucesso_start) * 100) if df.shape[0] > 0 else 0
+# percentual_participantes_start = round((total_participantes_start / total_contato_sucesso_start) * 100) if df.shape[0] > 0 else 0
 
-percentual_contato_sucesso_start = round((total_contato_sucesso_start / total_participantes_start_geral) * 100) if total_participantes_start_geral > 0 else 0
+# percentual_contato_sucesso_start = round((total_contato_sucesso_start / total_participantes_start_geral) * 100) if total_participantes_start_geral > 0 else 0
 
-# Top bairros dos participantes do Start
-top_bairros_start = df_participantes_start[df_participantes_start["Bairro"] != "Não informado"]["Bairro"].value_counts().head(5).reset_index()
-top_bairros_start.columns = ["Bairro", "Quantidade"]
-top_bairros_start.index = top_bairros_start.index + 1
+# # Top bairros dos participantes do Start
+# top_bairros_start = df_participantes_start[df_participantes_start["Bairro"] != "Não informado"]["Bairro"].value_counts().head(5).reset_index()
+# top_bairros_start.columns = ["Bairro", "Quantidade"]
+# top_bairros_start.index = top_bairros_start.index + 1
 
-st.subheader("📊 Análise dos Participantes do Start x Contatos Bridge")
-col1, col2 = st.columns(2)
-col1.metric("🎓 Total de Participantes do Start", total_participantes_start_geral)
-col2.metric("📊 % Contatados pelo Bridge que fizeram o Start", f"{percentual_participantes_start}%")
+# st.subheader("📊 Análise dos Participantes do Start x Contatos Bridge")
+# col1, col2 = st.columns(2)
+# col1.metric("🎓 Total de Participantes do Start", total_participantes_start_geral)
+# col2.metric("📊 % Contatados pelo Bridge que fizeram o Start", f"{percentual_participantes_start}%")
 
-col3, col4 = st.columns(2)
-col3.metric("📞 Contatados pelo Bridge", total_contato_sucesso_start)
-col4.metric("📊 % Contatados pelo Bridge x Total de Participantes do Start", f"{percentual_contato_sucesso_start}%")
+# col3, col4 = st.columns(2)
+# col3.metric("📞 Contatados pelo Bridge", total_contato_sucesso_start)
+# col4.metric("📊 % Contatados pelo Bridge x Total de Participantes do Start", f"{percentual_contato_sucesso_start}%")
 
-# Gráfico de barras - Participantes do Start contatados pelo Bridge por Bairro
-fig_start_bairros = px.bar(top_bairros_start, x="Bairro", y="Quantidade", title="📍 Participantes do Start contatados pelo Bridge por Bairro",
-              color_discrete_sequence=["#2297EF"], text="Quantidade")
-fig_start_bairros.update_traces(textposition='outside')
-st.plotly_chart(fig_start_bairros, use_container_width=True)
+# # Gráfico de barras - Participantes do Start contatados pelo Bridge por Bairro
+# fig_start_bairros = px.bar(top_bairros_start, x="Bairro", y="Quantidade", title="📍 Participantes do Start contatados pelo Bridge por Bairro",
+#               color_discrete_sequence=["#2297EF"], text="Quantidade")
+# fig_start_bairros.update_traces(textposition='outside')
+# st.plotly_chart(fig_start_bairros, use_container_width=True)
 
-# Gráfico de pizza - Percentual de Participantes do Start contatados pelo Bridge por Bairro
-fig_start_pizza = px.pie(top_bairros_start, names="Bairro", values="Quantidade", 
-              title="📊 Percentual de Participantes do Start contatados pelo Bridge por Bairro",
-              color_discrete_sequence=px.colors.sequential.Blues)
-fig_start_pizza.update_traces(textinfo='percent+label')
-st.plotly_chart(fig_start_pizza, use_container_width=True)
+# # Gráfico de pizza - Percentual de Participantes do Start contatados pelo Bridge por Bairro
+# fig_start_pizza = px.pie(top_bairros_start, names="Bairro", values="Quantidade", 
+#               title="📊 Percentual de Participantes do Start contatados pelo Bridge por Bairro",
+#               color_discrete_sequence=px.colors.sequential.Blues)
+# fig_start_pizza.update_traces(textinfo='percent+label')
+# st.plotly_chart(fig_start_pizza, use_container_width=True)
 
-# Gráfico de funil - Contatos bem-sucedidos vs. Participantes do Start
-fig_funnel = px.funnel(pd.DataFrame({
-    "Categoria": ["Total Contatos Sucesso", "Participantes do Start Contato Sucesso"],
-    "Quantidade": [total_contato_sucesso, total_contato_sucesso_start]
-}), x="Quantidade", y="Categoria", title="📉 Contatos Sucesso vs. Start")
-st.plotly_chart(fig_funnel, use_container_width=True)
+# # Gráfico de funil - Contatos bem-sucedidos vs. Participantes do Start
+# fig_funnel = px.funnel(pd.DataFrame({
+#     "Categoria": ["Total Contatos Sucesso", "Participantes do Start Contato Sucesso"],
+#     "Quantidade": [total_contato_sucesso, total_contato_sucesso_start]
+# }), x="Quantidade", y="Categoria", title="📉 Contatos Sucesso vs. Start")
+# st.plotly_chart(fig_funnel, use_container_width=True)
 
-# Exibir dados em formato de tabela interativa
-with st.expander("🔍 Ver Dados Detalhados do Bridge"):
-    st.dataframe(filtered_df)
+# # Exibir dados em formato de tabela interativa
+# with st.expander("🔍 Ver Dados Detalhados do Bridge"):
+#     st.dataframe(filtered_df)
 
-# Exibir dados em formato de tabela interativa
-with st.expander("🔍 Ver Dados Detalhados do Bridge x Start"):
-    st.dataframe(df_participantes_start)
+# # Exibir dados em formato de tabela interativa
+# with st.expander("🔍 Ver Dados Detalhados do Bridge x Start"):
+#     st.dataframe(df_participantes_start)
