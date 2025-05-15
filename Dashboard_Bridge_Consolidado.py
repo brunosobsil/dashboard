@@ -152,7 +152,7 @@ fig_evolucao_ano = px.line(novos_comecos_mensal, x="AnoMes", y="Quantidade",
                     title="📈 Novos Começos por Mês",
                     markers=True, line_shape='spline', text="Quantidade",
                     labels={"AnoMes": "Mês", "Quantidade": "Novos Começos"},
-                    color_discrete_sequence=["#FF690B"])
+                    color_discrete_sequence=["#2297EF"])
 
 fig_evolucao_ano.update_traces(textposition="top center", texttemplate="%{y}")
 fig_evolucao_ano.update_layout(xaxis_tickangle=-45)
@@ -191,7 +191,7 @@ fig_contato_qtd = px.bar(
     title="📊 Contatos por Mês - Quantidade",
     labels={"value": "Quantidade", "AnoMes": "Mês", "variable": "Contato"},
     barmode="group",
-    color_discrete_map={"Sim": "#2297EF", "Não": "#333333"}
+    color_discrete_map={"Sim": "#2297EF", "Não": "#08519C"}
 )
 fig_contato_qtd.update_layout(
     xaxis=dict(
@@ -216,7 +216,7 @@ fig_contato_pct = px.line(
     title="📈 Contatos por Mês - Percentual",
     markers=True,
     labels={"value": "Percentual (%)", "AnoMes": "Mês", "variable": "Contato"},
-    color_discrete_map={"Sim %": "#2297EF", "Não %": "#333333"}
+    color_discrete_map={"Sim %": "#2297EF", "Não %": "#08519C"}
 )
 fig_contato_pct.update_traces(textposition="top center", texttemplate="%{y:.1f}%")
 fig_contato_pct.update_layout(
