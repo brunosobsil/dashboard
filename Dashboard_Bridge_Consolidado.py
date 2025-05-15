@@ -137,6 +137,101 @@ st.plotly_chart(fig4, use_container_width=True)
 # Adicionar espaçamento abaixo do gráfico de pizza
 st.markdown('<div class="spacer"></div>', unsafe_allow_html=True)
 
+# Evolução mensal de novos começos
+st.subheader("🚀 Evolução Mensal de Novos Começos")
+
+# Garantir que a coluna de datas está em datetime
+df["Quando"] = pd.to_datetime(df["Quando"], dayfirst=True)
+
+# Agrupar por mês
+df["AnoMes"] = df["Quando"].dt.to_period("M").astype(str)
+novos_comecos_mensal = df.groupby("AnoMes").size().reset_index(name="Quantidade")
+
+# Criar gráfico
+fig_evolucao_ano = px.line(novos_comecos_mensal, x="AnoMes", y="Quantidade",
+                    title="📈 Novos Começos por Mês",
+                    markers=True, line_shape='spline', text="Quantidade",
+                    labels={"AnoMes": "Mês", "Quantidade": "Novos Começos"},
+                    color_discrete_sequence=["#FF690B"])
+
+fig_evolucao_ano.update_traces(textposition="top center", texttemplate="%{y}")
+fig_evolucao_ano.update_layout(xaxis_tickangle=-45)
+fig_evolucao_ano.update_layout(
+    xaxis=dict(
+        tickmode='array',
+        tickvals=novos_comecos_mensal["AnoMes"],
+        ticktext=novos_comecos_mensal["AnoMes"],
+        tickangle=-45
+    )
+)
+
+fig_evolucao_ano.update_traces(textposition="top center", texttemplate="%{y}")
+
+st.plotly_chart(fig_evolucao_ano, use_container_width=True)
+
+# 📞 Evolução mensal de contatos bem-sucedidos
+st.subheader("📞 Evolução Mensal de Contatos Bem-Sucedidos")
+
+# Criar coluna Mês/Ano
+df["AnoMes"] = df["Quando"].dt.to_period("M").astype(str)
+
+# Agrupar por mês e resposta
+contato_mensal = df.groupby(["AnoMes", "Conseguiu fazer contato?"]).size().reset_index(name="Quantidade")
+
+# Pivotar para gráfico de barras
+pivot_qtd = contato_mensal.pivot(index="AnoMes", columns="Conseguiu fazer contato?", values="Quantidade").fillna(0)
+pivot_qtd["Total"] = pivot_qtd.sum(axis=1)
+pivot_qtd = pivot_qtd.reset_index()
+
+# Gráfico de barras com quantidades
+fig_contato_qtd = px.bar(
+    pivot_qtd,
+    x="AnoMes",
+    y=["Sim", "Não"],
+    title="📊 Contatos por Mês - Quantidade",
+    labels={"value": "Quantidade", "AnoMes": "Mês", "variable": "Contato"},
+    barmode="group",
+    color_discrete_map={"Sim": "#2297EF", "Não": "#333333"}
+)
+fig_contato_qtd.update_layout(
+    xaxis=dict(
+        tickmode='array',
+        tickvals=pivot_qtd["AnoMes"],
+        ticktext=pivot_qtd["AnoMes"],
+        tickangle=-45
+    )
+)
+st.plotly_chart(fig_contato_qtd, use_container_width=True)
+
+# Calcular percentuais
+pivot_pct = pivot_qtd.copy()
+pivot_pct["Sim %"] = (pivot_pct["Sim"] / pivot_pct["Total"] * 100).round(1)
+pivot_pct["Não %"] = (pivot_pct["Não"] / pivot_pct["Total"] * 100).round(1)
+
+# Gráfico de linhas com percentuais
+fig_contato_pct = px.line(
+    pivot_pct,
+    x="AnoMes",
+    y=["Sim %", "Não %"],
+    title="📈 Contatos por Mês - Percentual",
+    markers=True,
+    labels={"value": "Percentual (%)", "AnoMes": "Mês", "variable": "Contato"},
+    color_discrete_map={"Sim %": "#2297EF", "Não %": "#333333"}
+)
+fig_contato_pct.update_traces(textposition="top center", texttemplate="%{y:.1f}%")
+fig_contato_pct.update_layout(
+    xaxis=dict(
+        tickmode='array',
+        tickvals=pivot_pct["AnoMes"],
+        ticktext=pivot_pct["AnoMes"],
+        tickangle=-45
+    )
+)
+st.plotly_chart(fig_contato_pct, use_container_width=True)
+
+
+
+
 #########
 # START #
 #########
