@@ -12,12 +12,22 @@ st.set_page_config(page_title="📊 Dashboard Ministério BRIDGE - 2025", layout
 def formatar_data(data):
     return format_datetime(data, "EEEE, d 'de' MMMM 'de' yyyy", locale='pt_BR')
 
-# Carregar os dados com cache para otimização de performance
 @st.cache_data
 def load_data():
     file_path = "Consolidado_Bridge_2025.xlsx"
     df = pd.read_excel(file_path, sheet_name="2025 Consolidado")
     df["Quando"] = pd.to_datetime(df["Quando"], dayfirst=True)
+
+    # Normalizar a coluna "Conseguiu fazer contato?"
+    df["Conseguiu fazer contato?"] = (
+        df["Conseguiu fazer contato?"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .map({"sim": "Sim", "não": "Não", "nao": "Não"})
+        .fillna("Não informado")
+    )
+
     return df
 
 @st.cache_data
@@ -97,23 +107,41 @@ st.subheader("🏙️ Top 5 Bairros com Mais Decisões")
 st.table(top_bairros)
 
 # Gráfico de pizza - Decisões por tipo
+#decisoes_count = filtered_df["Decisão"].value_counts().reset_index()
+#decisoes_count.columns = ["Tipo de Decisão", "Quantidade"]
+#fig1 = px.pie(decisoes_count, names="Tipo de Decisão", values="Quantidade", 
+#              title="📊 Distribuição das Decisões",
+#              color_discrete_sequence=["#2297EF"])
+#fig1.update_traces(textinfo='percent+label')
+#st.plotly_chart(fig1, use_container_width=True)
+
 decisoes_count = filtered_df["Decisão"].value_counts().reset_index()
 decisoes_count.columns = ["Tipo de Decisão", "Quantidade"]
-fig1 = px.pie(decisoes_count, names="Tipo de Decisão", values="Quantidade", 
-              title="📊 Distribuição das Decisões",
-              color_discrete_sequence=["#2297EF"])
-fig1.update_traces(textinfo='percent+label')
-st.plotly_chart(fig1, use_container_width=True)
 
-# Gráfico de linha - Evolução das decisões ao longo do tempo
-df_time = filtered_df.groupby("Quando").size().reset_index(name="Quantidade")
-df_time["Quando"] = df_time["Quando"].apply(lambda x: format_datetime(x, "EEEE, dd/MM/yy", locale='pt_BR'))  # Formatar as datas
-fig2 = px.line(df_time, x="Quando", y="Quantidade", 
-               title="📅 Evolução das Decisões ao Longo do Tempo",
-               markers=True, line_shape='spline', text="Quantidade")
-fig2.update_layout(xaxis=dict(tickmode='linear'), height=int((fig2.layout.height or 400) * 1.05))
-fig2.update_traces(textposition='top center', texttemplate='%{y}')
-st.plotly_chart(fig2, use_container_width=True)
+# Gráficos de pizza - Decisões por tipo (quantidade e percentual)
+col1, col2 = st.columns(2)
+
+with col1:
+    fig_pizza_qtd = px.pie(
+        decisoes_count,
+        names="Tipo de Decisão",
+        values="Quantidade",
+        title="📊 Distribuição das Decisões (Quantidade)",
+        color_discrete_sequence=px.colors.sequential.PuBu  # tons de azul suaves
+    )
+    fig_pizza_qtd.update_traces(textinfo='label+value')
+    st.plotly_chart(fig_pizza_qtd, use_container_width=True)
+
+with col2:
+    fig_pizza_pct = px.pie(
+        decisoes_count,
+        names="Tipo de Decisão",
+        values="Quantidade",
+        title="📊 Distribuição das Decisões (Percentual)",
+        color_discrete_sequence=px.colors.sequential.Blues  # tons de azul mais fortes
+    )
+    fig_pizza_pct.update_traces(textinfo='label+percent')
+    st.plotly_chart(fig_pizza_pct, use_container_width=True)
 
 # Gráfico de barras - Distribuição das decisões por bairro
 bairro_count_sorted = filtered_df[filtered_df["Bairro"] != "Não informado"]["Bairro"].value_counts().reset_index()
@@ -121,7 +149,7 @@ bairro_count_sorted.columns = ["Bairro", "Quantidade"]
 bairro_count_sorted = bairro_count_sorted.sort_values(by="Quantidade", ascending=False).head(10)
 fig3 = px.bar(bairro_count_sorted, x="Bairro", y="Quantidade", title="📍 Distribuição das Decisões por Bairro",
               color_discrete_sequence=["#2297EF"], text="Quantidade")
-fig3.update_traces(textposition='outside')
+fig3.update_traces(textposition='inside')
 fig3.update_layout(height=int((fig3.layout.height or 400) * 1.05))
 st.plotly_chart(fig3, use_container_width=True)
 
@@ -169,6 +197,40 @@ fig_evolucao_ano.update_traces(textposition="top center", texttemplate="%{y}")
 
 st.plotly_chart(fig_evolucao_ano, use_container_width=True)
 
+# 🙌 Evolução mensal de decisões "Aceitou Jesus"
+st.subheader("🙌 Evolução Mensal de Decisões: Aceitou Jesus")
+
+# Filtrar apenas os registros com decisão "Aceitou Jesus"
+df_aceitou = filtered_df[filtered_df["Decisão"].str.lower().str.strip() == "aceitou jesus"]
+
+# Agrupar por mês
+df_aceitou["AnoMes"] = df_aceitou["Quando"].dt.to_period("M").astype(str)
+aceitou_mensal = df_aceitou.groupby("AnoMes").size().reset_index(name="Quantidade")
+
+# Gráfico de linha
+fig_aceitou = px.line(
+    aceitou_mensal,
+    x="AnoMes",
+    y="Quantidade",
+    title="📈 Aceitaram Jesus por Mês",
+    markers=True,
+    line_shape="spline",
+    text="Quantidade",
+    labels={"AnoMes": "Mês", "Quantidade": "Aceitaram Jesus"},
+    color_discrete_sequence=["#1B77D3"]
+)
+fig_aceitou.update_traces(textposition="top center", texttemplate="%{y}")
+fig_aceitou.update_layout(
+    xaxis=dict(
+        tickmode='array',
+        tickvals=aceitou_mensal["AnoMes"],
+        ticktext=aceitou_mensal["AnoMes"],
+        tickangle=-45
+    )
+)
+
+st.plotly_chart(fig_aceitou, use_container_width=True)
+
 # 📞 Evolução mensal de contatos bem-sucedidos
 st.subheader("📞 Evolução Mensal de Contatos Bem-Sucedidos")
 
@@ -191,8 +253,10 @@ fig_contato_qtd = px.bar(
     title="📊 Contatos por Mês - Quantidade",
     labels={"value": "Quantidade", "AnoMes": "Mês", "variable": "Contato"},
     barmode="group",
-    color_discrete_map={"Sim": "#2297EF", "Não": "#08519C"}
+    color_discrete_map={"Sim": "#2297EF", "Não": "#08519C"},
+    text_auto=True
 )
+fig_contato_qtd.update_traces(textposition="inside")
 fig_contato_qtd.update_layout(
     xaxis=dict(
         tickmode='array',
@@ -208,29 +272,27 @@ pivot_pct = pivot_qtd.copy()
 pivot_pct["Sim %"] = (pivot_pct["Sim"] / pivot_pct["Total"] * 100).round(1)
 pivot_pct["Não %"] = (pivot_pct["Não"] / pivot_pct["Total"] * 100).round(1)
 
-# Gráfico de linhas com percentuais
-fig_contato_pct = px.line(
+# Gráfico de barras com percentuais
+fig_contato_pct = px.bar(
     pivot_pct,
     x="AnoMes",
     y=["Sim %", "Não %"],
-    title="📈 Contatos por Mês - Percentual",
-    markers=True,
+    title="📊 Contatos por Mês - Percentual",
     labels={"value": "Percentual (%)", "AnoMes": "Mês", "variable": "Contato"},
-    color_discrete_map={"Sim %": "#2297EF", "Não %": "#08519C"}
+    barmode="group",
+    color_discrete_map={"Sim %": "#2297EF", "Não %": "#08519C"},
+    text_auto=True
 )
-fig_contato_pct.update_traces(textposition="top center", texttemplate="%{y:.1f}%")
 fig_contato_pct.update_layout(
     xaxis=dict(
         tickmode='array',
         tickvals=pivot_pct["AnoMes"],
         ticktext=pivot_pct["AnoMes"],
         tickangle=-45
-    )
+    ),
+    yaxis=dict(ticksuffix='%')
 )
 st.plotly_chart(fig_contato_pct, use_container_width=True)
-
-
-
 
 #########
 # START #
