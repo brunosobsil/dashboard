@@ -4,7 +4,6 @@ import plotly.express as px
 from babel.dates import format_datetime
 from datetime import datetime
 import io
-import unicodedata  # <-- adicionado para normalização de espaços/unicode
 
 # Configuração da página
 st.set_page_config(page_title="📊 Dashboard Ministério BRIDGE - 2025", layout="wide")
@@ -40,24 +39,8 @@ def load_start_data():
 df = load_data()
 df_start = load_start_data()
 
-# Limpeza de dados — normalização global do Bairro (resolve duplicados como 'Copacabana' x 'Copacabana ')
-def _norm_unicode_spaces(s: str) -> str:
-    if s is None:
-        return ""
-    # normaliza forma Unicode (NFC), troca NBSP e espaços estreitos por espaço comum e colapsa múltiplos
-    s = unicodedata.normalize("NFC", str(s))
-    s = (s
-         .replace("\u00A0", " ")   # NBSP
-         .replace("\u2007", " ")   # figure space
-         .replace("\u202F", " "))  # narrow no-break space
-    s = " ".join(s.split())
-    return s.strip()
-
-df["Bairro"] = (
-    df["Bairro"]
-    .apply(_norm_unicode_spaces)
-    .replace(r"^\s*$|^--$", "Não informado", regex=True)
-)
+# Limpeza de dados
+df["Bairro"] = df["Bairro"].replace(r'^\s*$|--', 'Não informado', regex=True)
 
 # Estilização do Sidebar
 st.markdown(
@@ -454,7 +437,7 @@ with colB:
 # =========================================
 st.subheader("🏙️ Distribuição por Bairros (Top 10) — Por Faixa Etária")
 
-# Normalizar bairro (já normalizado globalmente acima; mantém fallback para valores vazios)
+# Normalizar bairro
 df_nc["Bairro"] = df_nc["Bairro"].replace(r'^\s*$|--', 'Não informado', regex=True).fillna("Não informado")
 
 # Top 10 bairros por total de novos começos
@@ -545,6 +528,9 @@ fig_evo_linhas.update_layout(
     hovermode="x unified"
 )
 st.plotly_chart(fig_evo_linhas, use_container_width=True)
+
+
+
 
 #########
 # START #
