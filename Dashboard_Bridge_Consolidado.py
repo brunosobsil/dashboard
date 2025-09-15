@@ -494,14 +494,45 @@ fig_bairro_stack = px.bar(
     text="Quantidade",
     title="📍 Top 10 Bairros — Novos Começos Por Faixa Etária"
 )
+
+# rótulos mais curtos só para a LEGENDA (sem mexer nos dados)
+legend_name_map = {
+    "Next 27+ (27–39)": "Next 27+",
+    "Next (18–26)": "Next 18–26",
+    "Nexteen (13–17)": "Nexteen",
+    "Connect (9–12)": "Connect",
+    "Kids (0–8)": "Kids",
+    "40+ (40–49)": "40+",
+    "50+ (50–59)": "50+",
+    "60+ (60–100)": "60+",
+}
+fig_bairro_stack.for_each_trace(
+    lambda t: t.update(
+        name=legend_name_map.get(t.name, t.name),
+        legendgroup=legend_name_map.get(t.name, t.name)
+    )
+)
+
 fig_bairro_stack.update_traces(textposition="inside", cliponaxis=False)
+
+# legenda otimizada para mobile: horizontal, multi-linha, abaixo do gráfico
 fig_bairro_stack.update_layout(
     xaxis_tickangle=-30,
     yaxis_title="Quantidade",
-    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
-    margin=dict(t=90)
+    legend=dict(
+        orientation="h",
+        title_text="Faixa",
+        yanchor="top", y=-0.22,   # abaixo do chart
+        xanchor="left", x=0,
+        font=dict(size=11),
+        itemsizing="trace",
+        itemwidth=70,             # ajuda a quebrar em mais linhas em telas estreitas
+        tracegroupgap=8
+    ),
+    margin=dict(t=90, b=110)      # espaço para a legenda embaixo
 )
 st.plotly_chart(fig_bairro_stack, use_container_width=True)
+
 
 # =========================================
 # 3) Evolução mensal por faixa (linhas)
@@ -537,14 +568,49 @@ fig_evo_linhas = px.line(
     markers=True,
     title="⏱️ Novos Começos por Mês e por Faixa Etária"
 )
+
+# rótulos mais curtos para a legenda
+legend_name_map = {
+    "Next 27+ (27–39)": "Next 27+",
+    "Next (18–26)": "Next 18–26",
+    "Nexteen (13–17)": "Nexteen",
+    "Connect (9–12)": "Connect",
+    "Kids (0–8)": "Kids",
+    "40+ (40–49)": "40+",
+    "50+ (50–59)": "50+",
+    "60+ (60–100)": "60+",
+}
+fig_evo_linhas.for_each_trace(
+    lambda t: t.update(
+        name=legend_name_map.get(t.name, t.name),
+        legendgroup=legend_name_map.get(t.name, t.name)
+    )
+)
+
 fig_evo_linhas.update_traces(mode="lines+markers", line=dict(width=2))
 fig_evo_linhas.update_layout(
-    xaxis=dict(tickangle=-45, tickmode="array", tickvals=meses_ordem, ticktext=meses_ordem),
+    xaxis=dict(
+        tickangle=-45,
+        tickmode="array",
+        tickvals=meses_ordem,
+        ticktext=meses_ordem
+    ),
     yaxis_title="Quantidade",
-    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+    legend=dict(
+        orientation="h",
+        title_text="Faixa",
+        yanchor="top", y=-0.25,   # posiciona abaixo
+        xanchor="left", x=0,
+        font=dict(size=11),
+        itemsizing="trace",
+        itemwidth=70,             # ajuda a quebrar linhas
+        tracegroupgap=8
+    ),
+    margin=dict(t=90, b=120),     # espaço extra para legenda embaixo
     hovermode="x unified"
 )
 st.plotly_chart(fig_evo_linhas, use_container_width=True)
+
 
 #########
 # START #
