@@ -16,7 +16,7 @@ def formatar_data(data):
 @st.cache_data
 def load_data():
     file_path = "Consolidado_Bridge_2026.xlsx"
-    df = pd.read_excel(file_path, sheet_name="2025 Consolidado")
+    df = pd.read_excel(file_path, sheet_name="2026 Consolidado")
     df["Quando"] = pd.to_datetime(df["Quando"], dayfirst=True)
 
     # Normalizar a coluna "Conseguiu fazer contato?"
@@ -120,13 +120,13 @@ filtered_df = df[df["Decisão"].isin(selected_decisao)] if selected_decisao else
 # Exibir logo
 st.image("images/logo.svg", width=200)
 
-st.title("Dashboard Ministério BRIDGE - 2025")
+st.title("Dashboard Ministério BRIDGE - 2026")
 
 # Calcular a data mais recente do arquivo Excel
 data_mais_recente = df["Quando"].max().strftime('%d/%m/%Y')
 
 # Adicionar subtítulo com o período
-st.markdown(f"### Período: 01/01/2025 até {data_mais_recente}")
+st.markdown(f"### Período: 01/01/2026 até {data_mais_recente}")
 
 st.markdown("---")
 
