@@ -7,7 +7,7 @@ import io
 import unicodedata  # <-- adicionado para normalização de espaços/unicode
 
 # Configuração da página
-st.set_page_config(page_title="📊 Dashboard Ministério BRIDGE - 2025", layout="wide")
+st.set_page_config(page_title="📊 Dashboard Ministério BRIDGE - 2026", layout="wide")
 
 # Função para formatar datas sem depender de locale do sistema
 def formatar_data(data):
@@ -15,7 +15,7 @@ def formatar_data(data):
 
 @st.cache_data
 def load_data():
-    file_path = "Consolidado_Bridge_2025.xlsx"
+    file_path = "Consolidado_Bridge_2026.xlsx"
     df = pd.read_excel(file_path, sheet_name="2025 Consolidado")
     df["Quando"] = pd.to_datetime(df["Quando"], dayfirst=True)
 
@@ -39,6 +39,35 @@ def load_start_data():
 
 df = load_data()
 df_start = load_start_data()
+
+# Normalizar "Decisão" para evitar categorias duplicadas (case/acentos/espaços invisíveis)
+def _norm_text_label(s: str) -> str:
+    if s is None:
+        return ""
+    s = unicodedata.normalize("NFC", str(s))
+    s = (s
+         .replace("\u00A0", " ")   # NBSP
+         .replace("\u2007", " ")   # figure space
+         .replace("\u202F", " ")   # narrow NBSP
+         .replace("\u200b", ""))   # zero-width space
+    s = " ".join(s.split()).strip()
+
+    # padroniza para comparação (sem perder o "bonito" final)
+    key = s.casefold()
+
+    mapa = {
+        "aceitou jesus": "Aceitou Jesus",
+        "reconciliou com jesus": "Reconciliou com Jesus",
+        "pedido de oração": "Pedido de oração",
+        "pedido de oracao": "Pedido de oração",
+    }
+    return mapa.get(key, s)
+
+df["Decisão"] = (
+    df["Decisão"]
+    .apply(_norm_text_label)
+    .replace(r"^\s*$|^--$", "Não informado", regex=True)
+)
 
 # Limpeza de dados — normalização global do Bairro (resolve duplicados como 'Copacabana' x 'Copacabana ')
 def _norm_unicode_spaces(s: str) -> str:
